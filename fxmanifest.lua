@@ -1,4 +1,4 @@
-fx_version 'bodacious'
+fx_version 'cerulean'
 games { 'gta5' }
 
 author 'Tiger (Lets_Tiger#4159)'
@@ -8,5 +8,6 @@ version '1.0'
 server_script "server/version_check.lua"
 
 client_scripts {
+	'config.lua',
 	'client/main.lua',
 }
