@@ -8,7 +8,7 @@
 - CanDriverDriveby (Darf der Fahrer des Fahrzeugs schießen?)
 
 ## Download
-[LINK]
+[[Latest Release]](https://github.com/LetsTiger/tg_antidriveby/archive/refs/tags/Releases.zip)
 
 ## Lizenz
 Dieses Script kann verändert und für deinen Server genutzt werden. Es ist NICHT erlaubt dieses Script erneut zu veröffentlichen oder ähnliches.
