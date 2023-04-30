@@ -3,7 +3,7 @@ games { 'gta5' }
 
 author 'Tiger (Lets_Tiger#4159)'
 description 'Anti Driveby'
-version '1.0'
+version '1.1'
 
 server_script "server/version_check.lua"
 
