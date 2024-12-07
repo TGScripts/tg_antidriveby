@@ -8,31 +8,35 @@ if commandstate then
 			if drivebystate then
 				drivebystate = false
 				allowed = false
-				exports["esx_notify"]:Notify("error", 3000, "Driveby deaktiviert.")
+				tg_shownotification(tg_translate('db_deactivated'))
 			else		
 				local vehicle = GetVehiclePedIsIn(GetPlayerPed(-1))
 				local isdriver = false
 				if GetPedInVehicleSeat(vehicle,-1) == GetPlayerPed(-1) then 
 					isdriver = true
-					print(isdriver) 
+					if Config.Debug then
+						print('isdriver: '..tostring(isdriver))
+					end
 				end
 				if not isdriver or Config.CanDriverDriveby then
-					print(drivebystate)
+					if Config.Debug then
+						print('drivebystate: '..tostring(drivebystate))
+					end
 					local vehicle = GetVehiclePedIsIn(GetPlayerPed(-1))
 					local speed = GetEntitySpeed(vehicle) * 3.602151
-					if speed < (Config.MaxSpeed + 5) then
+					if speed < (Config.MaxSpeed + Config.Tolerance) then
 						drivebystate = true
 						allowed = true
-						exports["esx_notify"]:Notify("success", 3000, "Driveby aktiviert. (max. "..Config.MaxSpeed.." km/h).")
+						tg_shownotification(tg_translate('db_activated', Config.MaxSpeed))
 					else
-						exports["esx_notify"]:Notify("error", 3000, "Du bist zu schnell unterwegs (max. "..Config.MaxSpeed.." km/h).")
+						tg_shownotification(tg_translate('db_too_fast', Config.MaxSpeed))
 					end
 				else
-					exports["esx_notify"]:Notify("error", 3000, "Als Fahrer kannst du kein Driveby machen.")
+					tg_shownotification(tg_translate('db_na_driver'))
 				end
 			end
 		else
-			exports["esx_notify"]:Notify("error", 3000, "Du bist in keinem Fahrzeug.")
+			tg_shownotification(tg_translate('db_no_vehicle'))
 		end
 	end)
 end
@@ -51,19 +55,34 @@ Citizen.CreateThread(function()
 				isdriver = true 
 			end
 			local speed = GetEntitySpeed(vehicle) * 3.602151
-			if speed > (Config.MaxSpeed + 5) then
+			if speed > (Config.MaxSpeed + Config.Tolerance) then
 				allowed = false
 				drivebystate = false
 				SetPlayerCanDoDriveBy(PlayerId(), false)
-				exports["esx_notify"]:Notify("error", 3000, "Du bist zu schnell unterwegs (max. "..Config.MaxSpeed.." km/h) - Driveby deaktiviert.")
+				tg_shownotification(tg_translate('db_too_fast', Config.MaxSpeed))
 			elseif isdriver and not Config.CanDriverDriveby then
 				allowed = false
 				drivebystate = false
 				SetPlayerCanDoDriveBy(PlayerId(), false)
-				exports["esx_notify"]:Notify("error", 3000, "Als Fahrer kannst du kein Driveby machen - Driveby deaktiviert.")
+				tg_shownotification(tg_translate('db_na_driver_wd'))
 			else
 				SetPlayerCanDoDriveBy(PlayerId(), true)
 			end
 		end
 	end
 end)
+
+function tg_shownotification(message)
+    local textureDict = "TG_Textures"
+    RequestStreamedTextureDict(textureDict, true)
+
+    while not HasStreamedTextureDictLoaded(textureDict) do
+        Wait(0)
+    end
+
+    BeginTextCommandThefeedPost("STRING")
+    AddTextComponentSubstringPlayerName(message)
+    EndTextCommandThefeedPostMessagetext(textureDict, "TG_Logo", false, 0, "TG Anti Driveby Script", "")
+
+    SetStreamedTextureDictAsNoLongerNeeded(textureDict)
+end

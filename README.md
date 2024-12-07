@@ -34,6 +34,7 @@
 > [!NOTE]
 > ## Features
 > **tg_antidriveby** ist ein Anti-Driveby Script für die ESX Version 1.9+. Es hindert Spieler grundsätzlich daran eine Waffe zu ziehen während sie in einem Fahrzeug sind. Eine Liste der Main Features:
+> - **Tolaranz** (Toleranz mit der beim Speedlimit gerechnet wird +-)
 > - **Speedlimit** (Maximale Geschwindigkeit um während des Fahrens zu schießens)
 > - **Command** (Befehl welcher das Driveby an-/abschaltet)
 > - **CanDriverDriveby** (Darf der Fahrer des Fahrzeugs schießen? - In der Config einstellbar)

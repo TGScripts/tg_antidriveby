@@ -1,69 +1,119 @@
-local label = 
-[[
-
-     ___      .__   __. .___________. __                 _______  .______       __  ____    ____  _______ .______   ____    ____ 
-    /   \     |  \ |  | |           ||  |               |       \ |   _  \     |  | \   \  /   / |   ____||   _  \  \   \  /   / 
-   /  ^  \    |   \|  | `---|  |----`|  |     ______    |  .--.  ||  |_)  |    |  |  \   \/   /  |  |__   |  |_)  |  \   \/   /  
-  /  /_\  \   |  . `  |     |  |     |  |    |______|   |  |  |  ||      /     |  |   \      /   |   __|  |   _  <    \_    _/   
- /  _____  \  |  |\   |     |  |     |  |               |  '--'  ||  |\  \----.|  |    \    /    |  |____ |  |_)  |     |  |     
-/__/     \__\ |__| \__|     |__|     |__|               |_______/ | _| `._____||__|     \__/     |_______||______/      |__|     
-                                                                                                                      
-                                            Made by Tiger (Lets_Tiger#4159)
-]]
-
 function GetCurrentVersion()
-	return GetResourceMetadata( GetCurrentResourceName(), "version" )
+    local version = GetResourceMetadata(GetCurrentResourceName(), "version")
+    if version == nil then
+        print("^1ERROR: Version konnte nicht aus dem fxmanifest.lua ausgelesen werden!^0")
+        return "0.0.0"
+    end
+    return version
 end
 
-Citizen.CreateThread( function()
-    updatePath = "/LetsTiger/tg_antidriveby"
-    resourceName = "Anti-Driveby Script ("..GetCurrentResourceName()..")"
+function compareVersions(version1, version2)
+    local v1Parts = {}
+    local v2Parts = {}
     
-    function checkVersion(err,responseText, headers)
-        curVersion = GetResourceMetadata(GetCurrentResourceName(), "version")
-        newVersion = tonumber(responseText)
-
-        if curVersion ~= responseText and tonumber(curVersion) < tonumber(responseText) then
-            rio = true
-            responseText = responseText
-            curVersion = curVersion
-            updatePath = updatePath
-        elseif tonumber(curVersion) > tonumber(responseText) then
-            svs = true
-        else
-            utd = true
+    for part in string.gmatch(version1, "%d+") do
+        table.insert(v1Parts, tonumber(part))
+    end
+    for part in string.gmatch(version2, "%d+") do
+        table.insert(v2Parts, tonumber(part))
+    end
+    
+    for i = 1, math.min(#v1Parts, #v2Parts) do
+        if v1Parts[i] < v2Parts[i] then
+            return -1
+        elseif v1Parts[i] > v2Parts[i] then
+            return 1
         end
     end
     
-    PerformHttpRequest("https://raw.githubusercontent.com"..updatePath.."/master/version", checkVersion, "GET")
-end)
-
-function Resourcestart()
-    print("\n")
-
-    print( label )
-
-    if rio then
-        print(" ^0[^1ERROR^0] "..resourceName.." ist veraltet! Bitte updaten: https://github.com/LetsTiger/tg_antidriveby/")
-        print(" ^0[^5INFO^0] Deine Version: [^1"..curVersion.."^0]")
-        print(" ^0[^5INFO^0] Neuste Version: [^3"..newVersion.."^0]")
-    elseif svs then
-        print(" ^0[^1ERROR^0] Irgendwie hast du ein paar Versionen vom "..resourceName.." übersprungen oder Github ist offline, wenn Github noch online ist bitte die neueste Version herunterladen.")
-        print(" ^0[^5INFO^0] Deine Version: [^1"..curVersion.."^0]")
-        print(" ^0[^5INFO^0] Neuste Version: [^3"..newVersion.."^0]")
-    elseif utd then
-        print(" ^0[^5INFO^0] Du hast die aktuellste Version vom "..resourceName..", viel Spaß!")
-        print(" ^0[^5INFO^0] Deine Version: [^2"..curVersion.."^0]")
-        print(" ^0[^5INFO^0] Neuste Version: [^2"..newVersion.."^0]")
-    else
-        print(" ^0[^1ERROR^0] Es ist etwas schiefgelaufen bitte kontaktiere den Ersteller!")
+    if #v1Parts < #v2Parts then
+        return -1
+    elseif #v1Parts > #v2Parts then
+        return 1
     end
 
-    print("")
-    print("\n")
+    return 0
 end
+
+Citizen.CreateThread(function()
+    local versionRepoUrl = "https://raw.githubusercontent.com/TGScripts/tg_script_versions/main/versions.json"
+    local resourceName = "Anti Driveby Script (" .. GetCurrentResourceName() .. ")"
+    local scriptName = "tg_antidriveby"
+
+    function checkVersion(err, responseText, headers)
+        local curVersion = GetCurrentVersion()
+
+        if Config.Debug then
+            print("[^3DEBUG^0] ^5Aktuelle Version des Scripts: " .. curVersion .. "^0")
+        end
+
+        if err ~= 200 then
+            printError("Fehler beim Abrufen der Versionsdaten. HTTP-Status: " .. tostring(err))
+            return
+        end
+        
+        if not responseText or responseText == "" then
+            printError("Die Versionsdaten sind leer oder ungültig.")
+            return
+        end
+
+        local allVersions = json.decode(responseText)
+        if allVersions and allVersions[scriptName] then
+            local newVersion = allVersions[scriptName]
+            
+            if Config.Debug then
+                print("[^3DEBUG^0] ^5Neue Version aus JSON: " .. newVersion .. "^0")
+            end
+
+            local compareResult = compareVersions(curVersion, newVersion)
+
+            if compareResult == -1 then
+                printVersionInfo("veraltet", curVersion, newVersion)
+            elseif compareResult == 1 then
+                printVersionInfo("übersprungen", curVersion, newVersion)
+            else
+                printVersionInfo("aktuell", curVersion, newVersion)
+            end
+        else
+            printError("Die Versionsnummer für das Script '" .. scriptName .. "' konnte nicht gefunden werden!")
+        end
+    end
+
+    function printVersionInfo(status, curVersion, newVersion)
+        print('^4.-------------------------------------------------------------------------------------------------------------------.')
+        print('^4|^0                                           TG Anti Driveby Script                                                  ^4|')
+        print('^4|^0                                    <Made by Tiger (Discord: lets_tiger)>                                          ^4|')
+        print('^4|-------------------------------------------------------------------------------------------------------------------|')
+
+        if status == "veraltet" then
+            print("^4|▶ ^0[^1ERROR^0] ^1" .. resourceName .. " ist veraltet! Bitte updaten: https://github.com/TGScripts/tg_antidriveby        ^4|")
+            print("^4|▶ ^0[^5INFO^0] Deine Version: [^1" .. curVersion .. "^0]                                                              ^4|")
+            print("^4|▶ ^0[^5INFO^0] Neuste Version: [^2" .. newVersion .. "^0]                                                             ^4|")
+        elseif status == "übersprungen" then
+            print("^4|▶ ^0[^1ERROR^0] ^1Du hast einige Versionen des " .. resourceName .. " übersprungen! Bitte die neueste Version herunterladen.")
+            print("^4|▶ ^0[^5INFO^0] Deine Version: [^1" .. curVersion .. "^0]                                                              ^4|")
+            print("^4|▶ ^0[^5INFO^0] Neuste Version: [^2" .. newVersion .. "^0]                                                             ^4|")
+        elseif status == "aktuell" then
+            print("^4|▶ ^0[^5INFO^0] Du hast die aktuellste Version vom " .. resourceName .. ", viel Spaß!                       ^4|")
+            print("^4|▶ ^0[^5INFO^0] Deine Version: [^2" .. curVersion .. "^0]                                                                                    ^4|")
+            print("^4|▶ ^0[^5INFO^0] Neuste Version: [^2" .. newVersion .. "^0]                                                                                   ^4|")
+        end
+
+        print('^4`-------------------------------------------------------------------------------------------------------------------´^0')
+    end
+
+    function printError(msg)
+        print('^4.-------------------------------------------------------------------------------------------------------------------.')
+        print('^4|^0                                           TG Anti Driveby Script                                                  ^4|')
+        print('^4|^0                                    <Made by Tiger (Discord: lets_tiger)>                                          ^4|')
+        print('^4|-------------------------------------------------------------------------------------------------------------------|')
+        print("^4|▶ ^0[^1ERROR^0] ^1" .. msg)
+        print('^4`-------------------------------------------------------------------------------------------------------------------´^0')
+    end
+
+    PerformHttpRequest(versionRepoUrl, checkVersion, "GET")
+end)
 
 CreateThread(function()
     Citizen.Wait(2100)
-    Resourcestart()
 end)
