@@ -20,20 +20,10 @@
 ![Downloads (all assets, all releases)](https://img.shields.io/github/downloads/TGScripts/tg_antidriveby/total?label=Downloads)
 
 ---
-> [!CAUTION]
-> # tg_antidriveby
-> **Kompatibilität:** FiveM Anti-Driveby Script - ESX 1.9+
-> | **_ESX Versions_** | Supported | Own Risk |
-> |--------------------|:-----------:|:----------:|
-> | before 1.9.0       |           |     ❌    |
-> | 1.9.0 - 1.10.7     |     ✅   |            |
-> | after 1.10.7       |           |     ❌    |
-
-<hr>
 
 > [!NOTE]
 > ## Features
-> **tg_antidriveby** ist ein Anti-Driveby Script für die ESX Version 1.9+. Es hindert Spieler grundsätzlich daran eine Waffe zu ziehen während sie in einem Fahrzeug sind. Eine Liste der Main Features:
+> **tg_antidriveby** ist ein Anti-Driveby Script für FiveM. Es hindert Spieler grundsätzlich daran eine Waffe zu ziehen während sie in einem Fahrzeug sind. Eine Liste der Main Features:
 > - **Tolaranz** (Toleranz mit der beim Speedlimit gerechnet wird +-)
 > - **Speedlimit** (Maximale Geschwindigkeit um während des Fahrens zu schießens)
 > - **Command** (Befehl welcher das Driveby an-/abschaltet)
